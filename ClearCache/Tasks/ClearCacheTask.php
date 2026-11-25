@@ -89,7 +89,11 @@ class ClearCacheTask extends AbstractTask
             }
 
             if ($item->isDir() && !$item->isLink()) {
-                @rmdir($item->getPathname());
+                // a directory that still holds a dotfile (or a file written
+                // meanwhile) is not empty: leave it, rmdir() would warn
+                if ((new \FilesystemIterator($item->getPathname()))->valid() === false) {
+                    @rmdir($item->getPathname());
+                }
             } elseif (@unlink($item->getPathname())) {
                 ++$count;
             }
